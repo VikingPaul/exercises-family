@@ -1,15 +1,8 @@
-var familyArray = []
-var keyArray = []
-$.ajax({
-  url: "https://nss-viking-family.firebaseio.com/family.json",
-  success: createArray
-});
-function createArray(family) {
-  for (let i in family) {
-    familyArray.push(family[i])
-    keyArray.push(i)
-  }
-  outputFamily()
+function firebaseCall() {
+  $.ajax({
+    url: "https://nss-viking-family.firebaseio.com/family.json",
+    success: outputFamily
+  });
 }
 $('#submit').click(function() {
   let newFamily = {
@@ -23,22 +16,20 @@ $('#submit').click(function() {
     type: "POST",
     data: JSON.stringify(newFamily)
   }).done(function(KeyOfStuff){
-    console.log("it saved");
-    familyArray.push(newFamily)
-    keyArray.push(KeyOfStuff)
     $("#name").val("");
     $("#age").val("");
     $("#gender").val("");
     $("#skills").val("");
-    outputFamily()
+    firebaseCall()
   })
 })
-function outputFamily() {
+function outputFamily(family) {
   string = ""
-  for (let i in familyArray) {
-    string += `<section><div>Name: ${familyArray[i].name}</div><div>Age: ${familyArray[i].age}</div><div>Gender: ${familyArray[i].gender}</div><div>Skills:</div><ul>`
-    for (let j in familyArray[i].skills) {
-      string += `<li>${familyArray[i].skills[j]}</li>`
+  console.log("family", family);
+  for (let i in family) {
+    string += `<section><div>Name: ${family[i].name}</div><div>Age: ${family[i].age}</div><div>Gender: ${family[i].gender}</div><div>Skills:</div><ul>`
+    for (let j in family[i].skills) {
+      string += `<li>${family[i].skills[j]}</li>`
     }
     string += `</ul><button id='delete${i}'>KILL</button></section>`
   }
@@ -49,13 +40,12 @@ $('#output').click(function(e) {
     deleteFamily(e.target.id.substring(6,e.target.id.length));
   }
 });
-function deleteFamily(num) {
+function deleteFamily(id) {
   $.ajax({
-    url: `https://nss-viking-family.firebaseio.com/family/${keyArray[num]}.json`,
+    url: `https://nss-viking-family.firebaseio.com/family/${id}.json`,
     type: "DELETE"
   }).done(function(){
-    familyArray.splice(num,1);
-    keyArray.splice(num,1);
-    outputFamily();
+    firebaseCall();
   });
 }
+firebaseCall()
